@@ -621,6 +621,247 @@ cms采用的是增量更新，g1采用的是原始快照。从效率上理解吧
 
   是jdk未来会使用的垃圾收集器，一直在完善。支持的内存更大，到TB水平、stw时间更短，控制在10ms以内，对cpu的影响控制在15%以内。
 
+### 4.4 安全点
+
+安全点是程序运行的一些位置，运行到这些地方，状态是确定的，jvm就可以安全的做一些操作。
+
+不是所有时机都适合做gc的，会有一些安全点供stw，gc。
+
+jvm会提供一个是否要gc的标识位，之后每个线程执行到安全点，发现标识位为true，即挂起等待gc，等所有线程都就位了，即开始gc。
+
+常用安全点：
+
+- 方法返回之后
+
+- 调用方法之前
+- ……
+
+**安全区域**
+
+一块代码区域中，如果引用关系不会发生变化，即称为安全区域，如果线程位于安全区域，则允许开始gc等操作。
+
+## 5. jvm并发调优实战
+
+调优的思路主要是优化full gc，减少gc的stw时间，避免oom
+
+### 5.1 jvm基本工具
+
+- jmap 查看当前jvm的堆栈信息，包括堆空间使用情况、对象数量以及占用空间
+
+```shell
+Usage:
+    jmap [option] <pid>
+        (to connect to running process)
+    jmap [option] <executable <core>
+        (to connect to a core file)
+    jmap [option] [server_id@]<remote server IP or hostname>
+        (to connect to remote debug server)
+
+where <option> is one of:
+    <none>               to print same info as Solaris pmap
+    -heap                to print java heap summary
+    -histo[:live]        to print histogram of java object heap; if the "live"
+                         suboption is specified, only count live objects
+    -clstats             to print class loader statistics
+    -finalizerinfo       to print information on objects awaiting finalization
+    -dump:<dump-options> to dump java heap in hprof binary format
+                         dump-options:
+                           live         dump only live objects; if not specified,
+                                        all objects in the heap are dumped.
+                           format=b     binary format
+                           file=<file>  dump heap to <file>
+                         Example: jmap -dump:live,format=b,file=heap.bin <pid>
+    -F                   force. Use with -dump:<dump-options> <pid> or -histo
+                         to force a heap dump or histogram when <pid> does not
+                         respond. The "live" suboption is not supported
+                         in this mode.
+    -h | -help           to print this help message
+    -J<flag>             to pass <flag> directly to the runtime system
+```
+
+直接通过histo查看当前的所有对象以及其数量、占用空间
+
+使用dump导出堆栈文件，之后使用可视化工具分析
+
+- jstack查看当前线程运行情况，同时可以检测sync关键字导致的死锁
+
+```shell
+jstack pid
+```
+
+查看线程堆栈调用信息，一个例子是结合top，查看cpu使用率最高的线程的调用栈
+
+1. top -pid pid，查看对应进程的使用情况
+2. 按H，查看具体线程调用情况，找到目标线程（cpu占用、资源占用情况不正常）的id
+3. 之后即根据线程id从jstack取出的信息中查看堆栈调用情况
+
+以上是linux中的步骤，mac中top没有查看threadid的功能
+
+- jinfo查看当前进程jvm启动参数、系统参数
+
+```shell
+Usage:
+    jinfo <option> <pid>
+       (to connect to a running process)
+
+where <option> is one of:
+    -flag <name>         to print the value of the named VM flag
+    -flag [+|-]<name>    to enable or disable the named VM flag
+    -flag <name>=<value> to set the named VM flag to the given value
+    -flags               to print VM flags
+    -sysprops            to print Java system properties
+    <no option>          to print both VM flags and system properties
+    -? | -h | --help | -help to print this help message
+```
+
+直接使用flags，打印jvm参数，或者使用sysprops打印系统参数。
+
+- jstat查看堆内存各部分使用量，以及gc情况
+
+```shell
+Usage: jstat --help|-options
+       jstat -<option> [-t] [-h<lines>] <vmid> [<interval> [<count>]]
+
+Definitions:
+  <option>      An option reported by the -options option
+  <vmid>        Virtual Machine Identifier. A vmid takes the following form:
+                     <lvmid>[@<hostname>[:<port>]]
+                Where <lvmid> is the local vm identifier for the target
+                Java virtual machine, typically a process id; <hostname> is
+                the name of the host running the target Java virtual machine;
+                and <port> is the port number for the rmiregistry on the
+                target host. See the jvmstat documentation for a more complete
+                description of the Virtual Machine Identifier.
+  <lines>       Number of samples between header lines.
+  <interval>    Sampling interval. The following forms are allowed:
+                    <n>["ms"|"s"]
+                Where <n> is an integer and the suffix specifies the units as 
+                milliseconds("ms") or seconds("s"). The default units are "ms".
+  <count>       Number of samples to take before terminating.
+  -J<flag>      Pass <flag> directly to the runtime system.
+  -? -h --help  Prints this help message.
+  -help         Prints this help message.
+```
+
+打印gc信息、堆栈占用情况等，具体的options如下
+
+```shell
+-class
+-compiler
+-gc
+-gccapacity
+-gccause
+-gcmetacapacity
+-gcnew
+-gcnewcapacity
+-gcold
+-gcoldcapacity
+-gcutil
+-printcompilation
+```
+
+**class**
+
+实例输出如下：
+
+```shell
+# 查看对应进程class加载情况，每1秒看一次，一共输出10次
+jstat -class pid 1000 10
+Loaded  Bytes  Unloaded  Bytes     Time   
+  6304 11885.8        0     0.0       1.53
+  6304 11885.8        0     0.0       1.53
+  6304 11885.8        0     0.0       1.53
+  6304 11885.8        0     0.0       1.53
+  6304 11885.8        0     0.0       1.53
+  6304 11885.8        0     0.0       1.53
+  6304 11885.8        0     0.0       1.53
+  6304 11885.8        0     0.0       1.53
+  6304 11885.8        0     0.0       1.53
+  6304 11885.8        0     0.0       1.53
+```
+
+**compiler**
+
+查看编译器编译情况？
+
+```shell
+Compiled Failed Invalid   Time   FailedType FailedMethod
+    3652      0       0     1.14          0   
+```
+
+**gc**
+
+查看gc的大体情况，包括eden、s0、s1、老年代、元数据区等占用大小，以及minor gc、full gc次数、占用时间。
+
+可以根据eden的容量增加速率计算大概多久进行一次minor gc，同时基于minor gc的次数以及消耗时间算出每次消耗时间；
+
+可以根据每次进入老年代的对象大小以及时间大致推算出老年代大概多久会满，同时也可以推算出full gc平均消耗时间。
+
+尽量让每次minor gc之后，进入s区域的对象大小小于总大小的50%，大于50%的话，会触发**动态年龄判断机制**，一些年龄还不够的对象会进入老年代，间接增大了full gc的频率。我的理解就是，尽量让临时对象在年轻代就被清理，同时尽量让一些已知的存活较久的对象尽早进入老年代。如果出现了因为空间分配不合理，导致临时对象进入了老年代，或者持久对象在年轻代中来回复制了多次，才进入老年代，都会降低jvm的gc效率。
+
+**大对象机制。**
+
+老年代的空间也不能太小，不然会因为**空间担保机制**导致full gc。
+
+### 5.2 调优实例
+
+计算minor gc、full gc的次数、时间。
+
+年轻代对象增长速率
+
+minor gc触发频率
+
+full gc触发频率，耗时
+
+‐XX:CMSInitiatingOccupancyFraction=75 老年代容量到75%左右，触发full gc
+
+‐XX:SurvivorRatio=6 eden和survivor的比例
+
+```shell
+‐Xms1536M‐Xmx1536M‐Xmn512M‐Xss256K‐XX:SurvivorRatio=6‐XX:MetaspaceSize=256M‐XX:MaxMetaspaceSize=256M ‐XX:+UseParNewGC‐XX:+UseConcMarkSweepGC‐XX:CMSInitiatingOccupancyFraction=75‐XX:+UseCMSInitiatingOccupancyOnly
+```
 
 
+
+fullgc频繁发生的实例
+
+元空间不够
+
+显示调用了system.gc()，有jvm参数控制禁止这种调用
+
+空间担保机制，老年代空间不够，触发full gc
+
+
+
+基于jmap找到不太对劲的对象，之后看这种对象哪里生成的，如果简单的话，可以直接全局搜索到，之后，可以看下哪些线程占用cpu时间会比较长，大概率是有问题的，可以从jstack中追踪下线程的调用栈。
+
+
+
+**内存泄漏的问题？**
+
+jvm缓存的使用场景可能会出现，即map，如果map不做特殊处理，会越来越大，首先频繁导致full gc，最终导致oom。要注册缓存淘汰策略，缓存过多了，按照一定策略淘汰。
+
+### 5.3 调优工具
+
+#### 5.3.1 artha
+
+#### 5.3.2 gclog
+
+有一些打印gc的vm参数，大体功能是控制gc 日志内容，控制gc文件数量、路径、大小、名称格式等。
+
+```shell
+# 路径 名称格式
+‐Xloggc:./gc‐%t.log
+# 打印gc详细信息
+‐XX:+PrintGCDetails
+# 打印gc日期
+‐XX:+PrintGCDateStamps
+# 打印gc时间
+‐XX:+PrintGCTimeStamps
+# 打印引发gc的原因 可能是年轻代空间不够 元空间空间不够 老年代空间不够
+‐XX:+PrintGCCause 
+‐XX:+UseGCLogFileRotation
+‐XX:NumberOfGCLogFiles=10
+‐XX:GCLogFileSize=100
+```
 
