@@ -218,11 +218,27 @@ java语言天然具有跨平台的特性，不同平台的区别体现在不同�
 
   对象会有一个比较重要的属性，年龄，经过一次gc存活下来，年龄加一，一般到15之后，即被放到老年代，证明不会轻易被回收。这里取15是因为存放age的地方在对象头中，而对象头中只为age分配了4位的空间，所以age最大是15。
 
+  **字符串常量池**
+
+  提升字符串创建的效率的一种方法，算是一种缓存。
+
 - 方法区
 
   包含加载的类、方法、常量、静态变量，是多个线程之间共享的。
 
   这个是1.8之后做了一定的改动，是直接用的物理内存，如果不设置，默认初始值是21M，之后根据具体使用情况进行缩小或者扩张。每次缩小或者扩张，都是在full gc之后做的，而full gc是比较耗费时间的，故对于规模较大的程序，如果没有设置方法区初始大小，启动过程中，会频繁因为方法区不够而触发full gc，拖慢启动速度。
+  
+  **常量池**
+  
+  一般一个类中会有一部分常量池，包含其中的字面量以及符号引用，之后加载类的时候，会把这些常量放到方法区，而存放这些常量的区域被成为运行时常量池。
+  
+  **符号引用**
+  
+  **直接引用**
+  
+  **动态链接**
+  
+  由符号引用转化为直接引用的过程。
 
 ### 2.2 jvm启动参数
 
@@ -865,4 +881,37 @@ jvm缓存的使用场景可能会出现，即map，如果map不做特殊处理�
 ‐XX:GCLogFileSize=100
 ```
 
--Xms2048m  -Xmx2048m  -Xmn768m  -Xss256k  -XX:SurvivorRatio=8  -XX:TargetSurvivorRatio=60  -XX:MetaspaceSize=256m  -XX:MaxMetaspaceSize=256m  -XX:+UseParNewGC  -XX:+UseConcMarkSweepGC  -XX:CMSInitiatingOccupancyFraction=92  -XX:+UseCMSInitiatingOccupancyOnly  -Xloggc:./gc-%t.log  -XX:+PrintGCDetails  -XX:+PrintGCDateStamps  -XX:+PrintGCTimeStamps  -XX:+PrintGCCause  -XX:+UseGCLogFileRotation  -XX:NumberOfGCLogFiles=10  -XX:GCLogFileSize=100
+加上前面的jvm的垃圾收集器参数一起整
+
+```shell
+-Xms2048m  
+-Xmx2048m  
+-Xmn768m  
+-Xss256k  
+-XX:SurvivorRatio=8  
+-XX:TargetSurvivorRatio=60  
+-XX:MetaspaceSize=256m  
+-XX:MaxMetaspaceSize=256m  
+-XX:+UseParNewGC  
+-XX:+UseConcMarkSweepGC  
+-XX:CMSInitiatingOccupancyFraction=92  
+-XX:+UseCMSInitiatingOccupancyOnly  
+```
+
+cms的日志如下，可以跟cms的流程对应起来
+
+```shell
+[GC (CMS Initial Mark) [1 CMS-initial-mark: 1208738K(1310720K)] 1293896K(2018560K), 0.0005314 secs] [Times: user=0.00 sys=0.00, real=0.00 secs] 
+[CMS-concurrent-mark-start]
+[CMS-concurrent-mark: 0.006/0.006 secs] [Times: user=0.00 sys=0.00, real=0.01 secs] 
+[CMS-concurrent-preclean-start]
+[CMS-concurrent-preclean: 0.001/0.001 secs] [Times: user=0.00 sys=0.00, real=0.00 secs] 
+[CMS-concurrent-abortable-preclean-start]
+[CMS-concurrent-abortable-preclean: 0.000/0.000 secs] [Times: user=0.00 sys=0.00, real=0.00 secs] 
+[GC (CMS Final Remark) [YG occupancy: 156287 K (707840 K)]2022-09-26T20:46:50.534+0800: 172.032: [Rescan (parallel) , 0.0014300 secs]2022-09-26T20:46:50.536+0800: 172.034: [weak refs processing, 0.0000246 secs]2022-09-26T20:46:50.536+0800: 172.034: [class unloading, 0.0020103 secs]2022-09-26T20:46:50.538+0800: 172.036: [scrub symbol table, 0.0031584 secs]2022-09-26T20:46:50.541+0800: 172.039: [scrub string table, 0.0003604 secs][1 CMS-remark: 1208738K(1310720K)] 1365026K(2018560K), 0.0070799 secs] [Times: user=0.20 sys=0.00, real=0.01 secs] 
+[CMS-concurrent-sweep-start]
+[CMS-concurrent-sweep: 0.005/0.005 secs] [Times: user=0.00 sys=0.00, real=0.01 secs] 
+[CMS-concurrent-reset-start]
+[CMS-concurrent-reset: 0.001/0.001 secs] [Times: user=0.00 sys=0.00, real=0.00 secs] 
+```
+
