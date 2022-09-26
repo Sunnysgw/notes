@@ -865,3 +865,4 @@ jvm缓存的使用场景可能会出现，即map，如果map不做特殊处理�
 ‐XX:GCLogFileSize=100
 ```
 
+-Xms2048m  -Xmx2048m  -Xmn768m  -Xss256k  -XX:SurvivorRatio=8  -XX:TargetSurvivorRatio=60  -XX:MetaspaceSize=256m  -XX:MaxMetaspaceSize=256m  -XX:+UseParNewGC  -XX:+UseConcMarkSweepGC  -XX:CMSInitiatingOccupancyFraction=92  -XX:+UseCMSInitiatingOccupancyOnly  -Xloggc:./gc-%t.log  -XX:+PrintGCDetails  -XX:+PrintGCDateStamps  -XX:+PrintGCTimeStamps  -XX:+PrintGCCause  -XX:+UseGCLogFileRotation  -XX:NumberOfGCLogFiles=10  -XX:GCLogFileSize=100
