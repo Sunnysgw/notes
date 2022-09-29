@@ -58,11 +58,11 @@
 
   - AutoProxyRegistrar
 
-    这里会引入InfrastructureAdvisorAutoProxyCreator这个类，是AbstractAdvisorAutoProxyCreator的子类，目的就是扫描到要处理的地方，并使用代理处理。
+    这里会引入InfrastructureAdvisorAutoProxyCreator这个类，是AbstractAdvisorAutoProxyCreator的子类，目的就是扫描到要处理的地方，并使用代理处理。这里其实是开启了基础的aop功能，只会扫描实现了Advisor接口的bean。
 
   - ProxyTransactionManagementConfiguration
 
-    中间会注册关于事务相关的advisor，把开始事务的类和方法过滤并缓存出来。其中方法注解中解析出来的内容会放到RuleBasedTransactionAttribute这个对象中。
+    中间会注册关于事务相关的advisor，这个advisor的执行优先级在配置了Order的advisor中是最低的，把开始事务的类和方法过滤并缓存出来。其中方法注解中解析出来的内容会放到RuleBasedTransactionAttribute这个对象中。
 
   到这里，就是可以保证可以扫描到事务注解标注的类和方法，下一步就是调用的时候
 

@@ -1,5 +1,45 @@
 # spring mybatis 整合
 
+> 整合的目的是为了把mybatis查询功能的对象作为一个bean注册到spring 容器中
+
+在mybatis中，有这几种重要的角色：
+
+- datasource
+
+  存储具体的数据库连接信息，同时用于建立并管理和数据库之间的连接，生产环境会采用连接池的方式实现。
+
+- sqlsession
+
+  对外暴露了具体的crud操作
+
+- Executor
+
+  sqlsession中使用executor做具体的操作
+
+- sqlsessionfactory
+
+  基于datasource构建sqlsession
+
+## 1. spring整合mybatis过程
+
+整个整合的过程即把定义好的mybatis操作封装成bean，注册到Spring 容器。
+
+1. 使用MapperScan注解开启扫描dao接口
+
+   MapperScan注解中注册了MapperScannerConfigurer类，该类实现了BeanDefinitionRegistryPostProcessor接口，而在接口的postProcessBeanDefinitionRegistry方法中，使用自定义的扫描器ClassPathMapperScanner扫描注解basePackages属性中配置的路径，这里自定义的扫描器重新定义了候选人的范围，默认只会扫描所有包含方法的接口，扫描规则如下：
+
+   ```java
+   return beanDefinition.getMetadata().isInterface() && beanDefinition.getMetadata().isIndependent();
+   ```
+
+   扫描到的接口，之后借助FactoryBean的机制给包装成bean，这里用的是MapperFactoryBean.class。它的getObject方法即返回对应的代理bean。
+
+
+
+
+
+
+
 1. 声明扫描注解，同时在注解中使用import注解获取扫描路径
 
 2. 使用spring 的scanner扫描路径下的所有接口，并注册到容器中

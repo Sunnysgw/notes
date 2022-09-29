@@ -48,17 +48,45 @@ spring中给提供了ProxyFactory给我们封装了代理的实现
 
 ### 1. 开启aop
 
-这里使用这个注解EnableAspectJAutoProxy，注解中会import一个类AspectJAutoProxyRegistrar，这个类会把处理aop的beanpostprocessor注册到bean工厂中：
+**注入点**：
+
+`ImportBeanDefinitionRegistrar`，可以用在import注解声明，在扫描到import注解的时候，注册对应的beandefination。
+
+
+
+这里使用这个注解EnableAspectJAutoProxy，注解中会import一个类AspectJAutoProxyRegistrar，这个类会把处理aop的beanpostprocessor（auto proxy creator 即 apc）注册到bean工厂中：
 
 ```java
 AopConfigUtils.registerAspectJAnnotationAutoProxyCreatorIfNecessary(registry);
 ```
 
+这一步是在处理beandefination的阶段做的，spring-aop包中一共定义了三种apc：
+
+- InfrastructureAdvisorAutoProxyCreator
+
+  处理基本的advisor类型的bean，在spring 事务的自动配置过程中开启
+
+- AspectJAwareAdvisorAutoProxyCreator
+
+- AnnotationAwareAspectJAutoProxyCreator
+
+  可以处理使用@Aspectj注解修饰的bean
+
 ### 2. 依次处理bean
+
+是在上文注册的apc中处理的，用到的**注入点**：
+
+- InstantiationAwareBeanPostProcessor
+
+  实例化前后调用，这里用到了实例化后的调用接口，在这里依次基于bd判断bean是否需要被代理
+
+- BeanPostProcessor
+
+  初始化前后调用，这里用到了初始化后的方法，即如果上一步判断需要代理，这里就做具体的实现，使用jdk动态代理或者gclib，是使用ProxyFactory来做的。
 
 在bean初始化后，会判断该bean有没有命中aop的逻辑，如果有命中，就使用代理对象替代原对象。其中有几个要注意的点：
 
-- 对于注入点，即advisor的筛选是在bean初始化完之后才做的，在处理第一个bean的时候，就把手动生命的advisor以及通过aspectj注解声明的advisor筛出来，并初始化过，之后放到缓存（map）中。
+- 对于注入点，即advisor的筛选是在bean初始化完之后才做的，在处理第一个bean的时候，就把手动声明的advisor以及通过aspectj注解声明的advisor筛出来，并初始化过，之后放到缓存（map）中，这里的advisor是有**顺序**的，可以使用Order注解来声明对应的顺序。
 - 如果一个bean要进行aop处理，就要spring中的ProxyFactory来构造对应的代理对象，构造的过程中会根据实际情况选择使用cglib还是jdk动态代理。
 
 **cglib or jdk动态代理**
