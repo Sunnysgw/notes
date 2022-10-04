@@ -1,0 +1,52 @@
+version: '3'
+
+services:
+  master1:
+    container_name: master1-replicas
+    image: redis:6.2.7
+    ports:
+      - "6479:6379"
+    volumes:
+      - ./master1/conf:/conf
+      - type: volume
+        source: datamaster1-replicas
+        target: /data
+    restart: always
+    networks:
+      redis:
+        ipv4_address: 172.16.239.3
+    command: [
+      'redis-server',
+      '/conf/redis.conf'
+    ]
+  slave1:
+    container_name: slave1-replicas
+    image: redis:6.2.7
+    ports:
+      - "6480:6379"
+    volumes:
+      - ./slave1/conf:/conf
+      - type: volume
+        source: dataslave1-replicas
+        target: /data
+    restart: always      
+    networks:
+      redis:
+        ipv4_address: 172.16.239.7
+    command: [
+      'redis-server',
+      '/conf/redis.conf'
+    ]
+networks:
+  redis:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.16.239.0/24
+volumes:
+  datamaster1-replicas:
+  dataslave1-replicas:
+  
+
+# redis-cli --cluster create --cluster-replicas 1 172.16.237.3:6379 172.16.237.4:6379 172.16.237.5:6379 172.16.237.6:6379 172.16.237.7:6379 172.16.237.8:6379
