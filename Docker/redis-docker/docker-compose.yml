@@ -1,0 +1,29 @@
+version: '3'
+
+services:
+  redis-5.0:
+    container_name: redis-5
+    image: redis:5.0.14
+    ports:
+      - "6379:6379"
+    restart: always
+    volumes:
+      - ./data-5:/data
+    command: [
+      'redis-server',
+      '--save 60 1',
+      '--loglevel warning'
+    ]
+  redis-6.0:
+    container_name: redis-6
+    image: redis:6.2.7
+    ports:
+      - "6380:6379"
+    restart: always
+    volumes:
+      - ./data-6:/data
+    command: [
+      'redis-server',
+      '--save 60 1',
+      '--loglevel warning'
+    ]

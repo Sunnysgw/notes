@@ -6,11 +6,11 @@ services:
     image: redis:6.2.7
     ports:
       - "6379:6379"
+    expose:
+      - 6379  
     volumes:
       - ./master1/conf:/conf
-      - type: volume
-        source: datamaster1
-        target: /data
+      - ./master1/data:/data
     restart: always
     networks:
       redis:
@@ -24,11 +24,11 @@ services:
     image: redis:6.2.7
     ports:
       - "6380:6379"
+    expose:
+      - 6379  
     volumes:
       - ./master2/conf:/conf
-      - type: volume
-        source: datamaster2
-        target: /data
+      - ./master2/data:/data
     restart: always      
     networks:
       redis:
@@ -42,11 +42,11 @@ services:
     image: redis:6.2.7
     ports:
       - "6381:6379"
+    expose:
+      - 6379  
     volumes:
       - ./master3/conf:/conf
-      - type: volume
-        source: datamaster3
-        target: /data
+      - ./master3/data:/data
     restart: always      
     networks:
       redis:
@@ -60,11 +60,11 @@ services:
     image: redis:6.2.7
     ports:
       - "6382:6379"
+    expose:
+      - 6379  
     volumes:
       - ./slave1/conf:/conf
-      - type: volume
-        source: dataslave1
-        target: /data
+      - ./slave1/data:/data
     restart: always      
     networks:
       redis:
@@ -78,11 +78,11 @@ services:
     image: redis:6.2.7
     ports:
       - "6383:6379"
+    expose:
+      - 6379  
     volumes:
       - ./slave2/conf:/conf
-      - type: volume
-        source: dataslave2
-        target: /data
+      - ./slave2/data:/data
     restart: always      
     networks:
       redis:
@@ -96,11 +96,11 @@ services:
     image: redis:6.2.7
     ports:
       - "6384:6379"
+    expose:
+      - 6379  
     volumes:
       - ./slave3/conf:/conf
-      - type: volume
-        source: dataslave3
-        target: /data
+      - ./slave3/data:/data
     restart: always      
     networks:
       redis:
@@ -109,6 +109,11 @@ services:
       'redis-server',
       '/conf/redis.conf'
     ]
+  client:
+    container_name: client
+    image: redis:6.2.7
+    networks:
+      redis:
 networks:
   redis:
     driver: bridge

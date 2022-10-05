@@ -8,9 +8,7 @@ services:
       - "6479:6379"
     volumes:
       - ./master1/conf:/conf
-      - type: volume
-        source: datamaster1-replicas
-        target: /data
+      - ./master1/data:/data
     restart: always
     networks:
       redis:
@@ -26,9 +24,7 @@ services:
       - "6480:6379"
     volumes:
       - ./slave1/conf:/conf
-      - type: volume
-        source: dataslave1-replicas
-        target: /data
+      - ./slave1/data:/data
     restart: always      
     networks:
       redis:
@@ -37,6 +33,50 @@ services:
       'redis-server',
       '/conf/redis.conf'
     ]
+  sentinel1:
+    container_name: sentinel1
+    image: redis:6.2.7
+    ports:
+      - "6481:26379"
+    volumes:
+      - ./sentinel1/conf:/conf
+      - ./sentinel1/data:/data    
+    networks:
+      redis:
+        ipv4_address: 172.16.239.8
+    depends_on:
+      - master1
+      - slave1
+  sentinel2:
+    container_name: sentinel2
+    image: redis:6.2.7
+    ports:
+      - "6482:26379"
+    volumes:
+      - ./sentinel2/conf:/conf
+      - ./sentinel2/data:/data
+    restart: always      
+    networks:
+      redis:
+        ipv4_address: 172.16.239.9
+    depends_on:
+      - master1
+      - slave1
+  sentinel3:
+    container_name: sentinel3
+    image: redis:6.2.7
+    ports:
+      - "6483:26379"
+    volumes:
+      - ./sentinel3/conf:/conf
+      - ./sentinel3/data:/data
+    restart: always      
+    networks:
+      redis:
+        ipv4_address: 172.16.239.10
+    depends_on:
+      - master1
+      - slave1
 networks:
   redis:
     driver: bridge
@@ -48,5 +88,5 @@ volumes:
   datamaster1-replicas:
   dataslave1-replicas:
   
-
+# redis-sentinel /conf/sentinel.conf
 # redis-cli --cluster create --cluster-replicas 1 172.16.237.3:6379 172.16.237.4:6379 172.16.237.5:6379 172.16.237.6:6379 172.16.237.7:6379 172.16.237.8:6379

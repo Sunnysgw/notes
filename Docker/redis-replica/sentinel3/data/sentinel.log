@@ -1,0 +1,49 @@
+31:X 05 Oct 2022 07:32:25.814 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+31:X 05 Oct 2022 07:32:25.818 # Redis version=6.2.7, bits=64, commit=00000000, modified=0, pid=31, just started
+31:X 05 Oct 2022 07:32:25.824 # Configuration loaded
+31:X 05 Oct 2022 07:32:25.831 * monotonic clock: POSIX clock_gettime
+31:X 05 Oct 2022 07:32:25.834 # A key '__redis__compare_helper' was added to Lua globals which is not on the globals allow list nor listed on the deny list.
+31:X 05 Oct 2022 07:32:25.837 * Running mode=sentinel, port=26379.
+31:X 05 Oct 2022 07:32:25.865 # Sentinel ID is b7e0306fcc65d0624a6064652606fe424521e671
+31:X 05 Oct 2022 07:32:25.867 # +monitor master mymaster 172.16.239.3 6379 quorum 2
+31:X 05 Oct 2022 07:32:25.870 * +slave slave 172.16.239.7:6379 172.16.239.7 6379 @ mymaster 172.16.239.3 6379
+31:X 05 Oct 2022 07:32:27.605 * +sentinel sentinel e27ad7036552918040eb89738026927b62f86f0d 172.16.239.8 26379 @ mymaster 172.16.239.3 6379
+31:X 05 Oct 2022 07:32:32.599 * +sentinel sentinel 24ec4491dd5976fc3ed5dd80fe3c708e88d6fa59 172.16.239.9 26379 @ mymaster 172.16.239.3 6379
+31:X 05 Oct 2022 07:35:38.800 # +sdown master mymaster 172.16.239.3 6379
+31:X 05 Oct 2022 07:35:38.872 # +odown master mymaster 172.16.239.3 6379 #quorum 3/2
+31:X 05 Oct 2022 07:35:38.889 # +new-epoch 1
+31:X 05 Oct 2022 07:35:38.893 # +try-failover master mymaster 172.16.239.3 6379
+31:X 05 Oct 2022 07:35:38.920 # +vote-for-leader b7e0306fcc65d0624a6064652606fe424521e671 1
+31:X 05 Oct 2022 07:35:38.922 # 24ec4491dd5976fc3ed5dd80fe3c708e88d6fa59 voted for 24ec4491dd5976fc3ed5dd80fe3c708e88d6fa59 1
+31:X 05 Oct 2022 07:35:38.924 # e27ad7036552918040eb89738026927b62f86f0d voted for e27ad7036552918040eb89738026927b62f86f0d 1
+31:X 05 Oct 2022 07:35:49.701 # -failover-abort-not-elected master mymaster 172.16.239.3 6379
+31:X 05 Oct 2022 07:35:49.768 # Next failover delay: I will not start a failover before Wed Oct  5 07:41:39 2022
+31:X 05 Oct 2022 07:41:39.090 # +new-epoch 2
+31:X 05 Oct 2022 07:41:39.126 # +vote-for-leader 24ec4491dd5976fc3ed5dd80fe3c708e88d6fa59 2
+31:X 05 Oct 2022 07:41:39.128 # Next failover delay: I will not start a failover before Wed Oct  5 07:47:39 2022
+31:X 05 Oct 2022 07:41:39.449 # +config-update-from sentinel 24ec4491dd5976fc3ed5dd80fe3c708e88d6fa59 172.16.239.9 26379 @ mymaster 172.16.239.3 6379
+31:X 05 Oct 2022 07:41:39.450 # +switch-master mymaster 172.16.239.3 6379 172.16.239.7 6379
+31:X 05 Oct 2022 07:41:39.452 * +slave slave 172.16.239.3:6379 172.16.239.3 6379 @ mymaster 172.16.239.7 6379
+31:X 05 Oct 2022 07:42:09.474 # +sdown slave 172.16.239.3:6379 172.16.239.3 6379 @ mymaster 172.16.239.7 6379
+31:X 05 Oct 2022 07:45:10.887 # -sdown slave 172.16.239.3:6379 172.16.239.3 6379 @ mymaster 172.16.239.7 6379
+30:X 05 Oct 2022 07:47:39.075 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+30:X 05 Oct 2022 07:47:39.080 # Redis version=6.2.7, bits=64, commit=00000000, modified=0, pid=30, just started
+30:X 05 Oct 2022 07:47:39.085 # Configuration loaded
+30:X 05 Oct 2022 07:47:39.091 * monotonic clock: POSIX clock_gettime
+30:X 05 Oct 2022 07:47:39.101 # A key '__redis__compare_helper' was added to Lua globals which is not on the globals allow list nor listed on the deny list.
+30:X 05 Oct 2022 07:47:39.105 * Running mode=sentinel, port=26379.
+30:X 05 Oct 2022 07:47:39.108 # Sentinel ID is b7e0306fcc65d0624a6064652606fe424521e671
+30:X 05 Oct 2022 07:47:39.111 # +monitor master mymaster 172.16.239.7 6379 quorum 2
+43:X 05 Oct 2022 07:49:01.098 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+43:X 05 Oct 2022 07:49:01.103 # Redis version=6.2.7, bits=64, commit=00000000, modified=0, pid=43, just started
+43:X 05 Oct 2022 07:49:01.107 # Configuration loaded
+43:X 05 Oct 2022 07:49:01.112 * monotonic clock: POSIX clock_gettime
+43:X 05 Oct 2022 07:49:01.117 # Warning: Could not create server TCP listening socket *:26379: bind: Address already in use
+43:X 05 Oct 2022 07:49:01.120 # Failed listening on port 26379 (TCP), aborting.
+30:X 05 Oct 2022 07:50:19.780 # +sdown master mymaster 172.16.239.7 6379
+30:X 05 Oct 2022 07:50:19.921 # +new-epoch 3
+30:X 05 Oct 2022 07:50:19.930 # +vote-for-leader 24ec4491dd5976fc3ed5dd80fe3c708e88d6fa59 3
+30:X 05 Oct 2022 07:50:20.526 # +config-update-from sentinel 24ec4491dd5976fc3ed5dd80fe3c708e88d6fa59 172.16.239.9 26379 @ mymaster 172.16.239.7 6379
+30:X 05 Oct 2022 07:50:20.529 # +switch-master mymaster 172.16.239.7 6379 172.16.239.3 6379
+30:X 05 Oct 2022 07:50:20.531 * +slave slave 172.16.239.7:6379 172.16.239.7 6379 @ mymaster 172.16.239.3 6379
+30:X 05 Oct 2022 07:50:50.614 # +sdown slave 172.16.239.7:6379 172.16.239.7 6379 @ mymaster 172.16.239.3 6379
