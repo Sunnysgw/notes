@@ -1,0 +1,133 @@
+version: '3'
+
+services:
+  master1:
+    container_name: master1
+    image: redis:6.2.7
+    ports:
+      - "6379:6379"
+    expose:
+      - 6379  
+    volumes:
+      - ./master1/conf:/conf
+      - datamaster1:/data
+    restart: always
+    networks:
+      redis:
+        ipv4_address: 172.16.237.3
+    command: [
+      'redis-server',
+      '/conf/redis.conf'
+    ]
+  master2:
+    container_name: master2
+    image: redis:6.2.7
+    ports:
+      - "6380:6379"
+    expose:
+      - 6379  
+    volumes:
+      - ./master2/conf:/conf
+      - datamaster2:/data
+    restart: always      
+    networks:
+      redis:
+        ipv4_address: 172.16.237.4
+    command: [
+      'redis-server',
+      '/conf/redis.conf'
+    ]
+  master3:
+    container_name: master3
+    image: redis:6.2.7
+    ports:
+      - "6381:6379"
+    expose:
+      - 6379  
+    volumes:
+      - ./master3/conf:/conf
+      - datamaster3:/data
+    restart: always      
+    networks:
+      redis:
+        ipv4_address: 172.16.237.5
+    command: [
+      'redis-server',
+      '/conf/redis.conf'
+    ]
+  slave1:
+    container_name: slave1
+    image: redis:6.2.7
+    ports:
+      - "6382:6379"
+    expose:
+      - 6379  
+    volumes:
+      - ./slave1/conf:/conf
+      - dataslave1:/data
+    restart: always      
+    networks:
+      redis:
+        ipv4_address: 172.16.237.7
+    command: [
+      'redis-server',
+      '/conf/redis.conf'
+    ]
+  slave2:
+    container_name: slave2
+    image: redis:6.2.7
+    ports:
+      - "6383:6379"
+    expose:
+      - 6379  
+    volumes:
+      - ./slave2/conf:/conf
+      - dataslave2:/data
+    restart: always      
+    networks:
+      redis:
+        ipv4_address: 172.16.237.8
+    command: [
+      'redis-server',
+      '/conf/redis.conf'
+    ]
+  slave3:
+    container_name: slave3
+    image: redis:6.2.7
+    ports:
+      - "6384:6379"
+    expose:
+      - 6379  
+    volumes:
+      - ./slave3/conf:/conf
+      - dataslave3:/data
+    restart: always      
+    networks:
+      redis:
+        ipv4_address: 172.16.237.6
+    command: [
+      'redis-server',
+      '/conf/redis.conf'
+    ]
+  client:
+    container_name: client
+    image: redis:6.2.7
+    networks:
+      redis:
+networks:
+  redis:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.16.237.0/24
+volumes:
+  datamaster1:
+  datamaster2:
+  datamaster3:
+  dataslave1:
+  dataslave2:
+  dataslave3:
+  
+
+# redis-cli --cluster create --cluster-replicas 1 172.16.237.3:6379 172.16.237.4:6379 172.16.237.5:6379 172.16.237.6:6379 172.16.237.7:6379 172.16.237.8:6379
