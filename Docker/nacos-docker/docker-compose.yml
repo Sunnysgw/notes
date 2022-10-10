@@ -1,0 +1,20 @@
+version: '3'
+
+services:
+  nacos:
+    image: openjdk:8
+    container_name: nacos
+    ports:
+      - "8848:8848"
+    expose:
+      - 8848
+      - 9848
+    networks:
+      redis-cluster_redis:
+    volumes:
+      - ./nacos:/opt/nacos
+    command: '/opt/nacos/bin/startup.sh'
+    
+networks:
+  redis-cluster_redis:
+    external: true

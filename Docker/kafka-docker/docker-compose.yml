@@ -1,0 +1,73 @@
+version: "3"
+
+services:
+  zookeeper:
+    image: zookeeper:3.8.0
+    ports:
+      - "2181:2181"
+    expose:
+      - 2181
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+    networks:
+      redis-cluster_redis:
+
+  kafka1:
+    image: ubuntu/kafka:edge
+    ports:
+      - "9192:9092"
+    environment:
+      - TZ=UTC
+      - ZOOKEEPER_HOST=zookeeper
+      - PATH=/opt/kafka/bin:$PATH
+    volumes:
+      - ./kafka_conf/broker1/server.properties:/etc/kafka/server.properties
+      - ./kafka_data/broker1:/kafka_logs
+    networks:
+      redis-cluster_redis:
+        ipv4_address: 172.16.237.91
+    depends_on:
+      - zookeeper
+    restart: always
+
+  kafka2:
+    image: ubuntu/kafka:edge
+    ports:
+      - "9193:9092"
+    environment:
+      - TZ=UTC
+      - ZOOKEEPER_HOST=zookeeper
+      - PATH=/opt/kafka/bin:$PATH
+    volumes:
+      - ./kafka_conf/broker2/server.properties:/etc/kafka/server.properties
+      - ./kafka_data/broker2:/kafka_logs
+    networks:
+      redis-cluster_redis:
+        ipv4_address: 172.16.237.92
+    depends_on:
+      - zookeeper
+    restart: always
+
+  kafka3:
+    image: ubuntu/kafka:edge
+    ports:
+      - "9194:9092"
+    environment:
+      - TZ=UTC
+      - ZOOKEEPER_HOST=zookeeper
+      - PATH=/opt/kafka/bin:$PATH
+    volumes:
+      - ./kafka_conf/broker3/server.properties:/etc/kafka/server.properties
+      - ./kafka_data/broker3:/kafka_logs
+    networks:
+      redis-cluster_redis:
+        ipv4_address: 172.16.237.93
+    depends_on:
+      - zookeeper
+    restart: always
+  
+networks:
+  redis-cluster_redis:
+    external: true
+
+# ./kafka-topics.sh --create --bootstrap-server 172.16.237.90:9092 --topic test --partitions 1 --replication-factor 1

@@ -1,0 +1,51 @@
+version: "3"
+services:
+  mongo0:
+    hostname: mongo0
+    container_name: mongo0
+    image: mongo:$MONGO_VERSION
+    expose:
+      - 27017
+    ports:
+      - 27017:27017
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=value
+      - MONGO_INITDB_ROOT_PASSWORD=
+    restart: always
+    entrypoint: [ "mongod", "-f", "/mongodb/conf/mongo.conf", "--replSet", "rs0"]
+    volumes:
+      - ./conf/mongo.conf:/mongodb/conf/mongo.conf
+      - ./data/volume-mongo-rs/db0:/mongodb/data
+
+  mongo1:
+    hostname: mongo1
+    container_name: mongo1
+    image: mongo:$MONGO_VERSION
+    expose:
+      - 27017
+    ports:
+      - 27018:27017
+    restart: always
+    entrypoint: [ "mongod", "-f", "/mongodb/conf/mongo.conf", "--replSet", "rs0"]
+    volumes:
+      - ./conf/mongo.conf:/mongodb/conf/mongo.conf
+      - ./data/volume-mongo-rs/db1:/mongodb/data
+    depends_on:
+      - mongo0
+
+  mongo2:
+    # Host name = Container name
+    hostname: mongo2
+    container_name: mongo2
+    image: mongo:$MONGO_VERSION
+    expose:
+      - 27017
+    ports:
+      - 27019:27017
+    restart: always
+    entrypoint: [ "mongod", "-f", "/mongodb/conf/mongo.conf", "--replSet", "rs0"]
+    volumes:
+      - ./conf/mongo.conf:/mongodb/conf/mongo.conf
+      - ./data/volume-mongo-rs/db2:/mongodb/data
+    depends_on:
+       - mongo0
